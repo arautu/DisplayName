@@ -37,10 +37,9 @@ BEGINFILE {
 }
 
 /^(public|private|protected) .*class/ {
-  if (!(classe[cntClass++] = getClass($0))) {
-    print "Erro: Nome da classe não foi encontrado." > "/dev/tty";
-    exit 1;
-  }
+  classe[cntClass++] = getClass($0);
+  flag[0] = "gerarCodigo";
+  flag[1] = "classe";
 }
 
 /^(public|private|protected) enum/ {
@@ -51,23 +50,7 @@ BEGINFILE {
 }
 
 /^\s*?@DisplayName/ {
-  fmt = removerIdentacao($0);
-  print " Instrução:", FNR, fmt > "/dev/tty";
-
   texto = getTextoEntreAspas($0);
-  
-  while (getline) {
-    fmt = removerIdentacao($0);
-    printf "            %s %s\n", FNR, fmt > "/dev/tty";
-    
-    if (match($0, /^\s+?\w+.*\(.*\)/)) {
-      displayName($0, package"."classe[0], texto);
-      break;
-    }
-  }
-  codigo = getCodigo();
-  printf " Código: %s\n\n", codigo  > "/dev/tty";
-  next;
 }
 
 $0 ~ /(public|private|protected).* ((get)|(is))\w+\(/ && 
@@ -75,14 +58,25 @@ $0 !~ /getId/ &&
 $0 !~ /^has+/ &&
 $0 !~ /getDataAlteracaoAuditoria/ &&
 $0 !~ /getUsuarioAuditoria/ {
+  flag[0] = "gerarCodigo";
+  flag[1] = "metodo";
+}
 
-  fmt = removerIdentacao($0);
-  print " Instrução:", FNR, fmt > "/dev/tty";
-  
-  texto = getTexto("Entre o id do código:");
-  displayName($0, package"."classe[0], texto);
-  codigo = getCodigo();
-  printf " Código: %s\n\n", codigo  > "/dev/tty";
+flag[0] == "gerarCodigo" {
+   fmt = removerIdentacao($0);
+   print " Instrução:", FNR, fmt > "/dev/tty";
+   
+   if(!texto) {
+     texto = getTexto("Entre o texto do código:");
+   }
+
+   displayName($0, package"."classe[0], texto, flag[1]);
+   codigo = getCodigo();
+   printf " Código: %s\n\n", codigo  > "/dev/tty";
+   printf ("%s\r\n", codigo) >> MsgProp;
+
+   delete flag;
+   texto = "";
 }
 
 ENDFILE {

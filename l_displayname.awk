@@ -51,10 +51,18 @@ function getTexto(aviso,   Oldrs, id) {
 # * lineMetodo: Método 'getter' ou 'is', ex: 'public getValor()'.
 # * prefix: Prefixo do código de dicionário, ex:'modulo"."classe'
 # * texto: Texto que o código de dicionário representa.
-function displayName(lineMetodo, prefix, texto) {
+function displayName(lineMetodo, prefix, texto, instrucao) {
   id = "";
-  id = getPropriedadePeloMetodo(lineMetodo);
-  codigo = prefix"."id"="texto;
+
+  switch (instrucao) {
+    case "metodo":
+      id = getPropriedadePeloMetodo(lineMetodo);
+      codigo = prefix"."id"="texto;
+      break;
+    case "classe":
+      codigo = prefix"="texto;
+      break;
+  }
 }
 
 # Recebe como parâmetro um método 'getter' ou 'is' e descobre a propriedade.

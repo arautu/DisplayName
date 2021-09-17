@@ -36,6 +36,11 @@ BEGINFILE {
   }
 }
 
+/^\s*?@DisplayName/ {
+  texto = getTextoEntreAspas($0);
+  next;
+}
+
 /^(public|private|protected) .*class/ {
   classe[cntClass++] = getClass($0);
   flag[0] = "gerarCodigo";
@@ -47,10 +52,6 @@ BEGINFILE {
     print "Erro: Nome do enum não foi encontrado." > "/dev/tty";
     exit 1;
   }
-}
-
-/^\s*?@DisplayName/ {
-  texto = getTextoEntreAspas($0);
 }
 
 $0 ~ /(public|private|protected).* ((get)|(is))\w+\(/ && 
@@ -73,10 +74,18 @@ flag[0] == "gerarCodigo" {
    displayName($0, package"."classe[0], texto, flag[1]);
    codigo = getCodigo();
    printf " Código: %s\n\n", codigo  > "/dev/tty";
-   printf ("%s\r\n", codigo) >> MsgProp;
-
+   
+   if ("inplace::begin" in FUNCTAB) {
+     printf ("%s\r\n", codigo) >> MsgProp;
+   }
    delete flag;
    texto = "";
+}
+
+{
+  if ("inplace::begin" in FUNCTAB) {    
+    printf "%s%s", $0, RT;
+  }
 }
 
 ENDFILE {

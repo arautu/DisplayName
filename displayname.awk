@@ -41,13 +41,13 @@ BEGINFILE {
   next;
 }
 
-/^(public|private|protected) .*class/ {
+/^\s+?(public|private|protected) .*class/ {
   classe[cntClass++] = getClass($0);
   flag[0] = "gerarCodigo";
   flag[1] = "classe";
 }
 
-/^(public|private|protected) enum/ {
+/^\s+?(public|private|protected) .*enum/ {
   if (!(classe[cntClass++] = getEnum($0))) {
     print "Erro: Nome do enum não foi encontrado." > "/dev/tty";
     exit 1;
@@ -55,7 +55,7 @@ BEGINFILE {
 }
 
 $0 ~ /(public|private|protected).* ((get)|(is))\w+\(/ && 
-$0 !~ /getId/ &&
+$0 !~ /getId\>/ &&
 $0 !~ /^has+/ &&
 $0 !~ /getDataAlteracaoAuditoria/ &&
 $0 !~ /getUsuarioAuditoria/ {
@@ -91,7 +91,7 @@ flag[0] == "gerarCodigo" {
 ENDFILE {
   if (cntClass > 1) {
     printf "Aviso: Encontradas as seguintes classes e/ou enums aninhados: " > "/dev/tty";
-    for (i in classe) {
+    for (i=1; i<length(classe); i++) {
       printf "%s ", classe[i] > "/dev/tty";
     }
   printf "\n" > "/dev/tty";

@@ -20,14 +20,18 @@ BEGINFILE {
     exit 1;
   }
   convertIso8859ToUtf8();
-  cntClass = 0;
+  cnt = 0;
+  prefixo = "";
   package = "";
-  delete classe;
+  class = "";
 
   print "\n==== Criação de códigos de dicionário de propriedades  ====\n" > "/dev/tty";
   print "Arquivo:", FILENAME > "/dev/tty";
   printf "Properties: %s\n\n", MsgProp > "/dev/tty";
 }
+
+/{/ && cnt++ ||
+/}/ && cnt-- {}
 
 /package/ {
   if(!(package = getPackage($0))) {
@@ -41,17 +45,32 @@ BEGINFILE {
   next;
 }
 
-/^\s+?(public|private|protected) .*class/ {
-  classe[cntClass++] = getClass($0);
+/^(public|private|protected).*\<class\>/ {
+  class = getClass($0);
+  prefixo = package"."class;
+  print prefixo
   flag[0] = "gerarCodigo";
   flag[1] = "classe";
 }
 
-/^\s+?(public|private|protected) .*enum/ {
-  if (!(classe[cntClass++] = getEnum($0))) {
-    print "Erro: Nome do enum não foi encontrado." > "/dev/tty";
-    exit 1;
+/\s+.*\<class\>/ {
+  cc = cnt - 1;
+  
+  nestedClass = getClass($0);
+  prefixo = package"."class"."nestedClass;
+  flag[0] = "gerarCodigo";
+  flag[1] = "classe";
+}
+
+/\s+.*\<class\>/, cnt==cc {
+  if (cnt == cc) {
+    nestedClass = "";
+    prefixo = package"."class;
   }
+}
+
+/^\s+(public|private|protected).*\<enum\>/ {
+  enum = getEnum($0);
 }
 
 $0 ~ /(public|private|protected).* ((get)|(is))\w+\(/ && 
@@ -71,7 +90,7 @@ flag[0] == "gerarCodigo" {
      texto = getTexto("Entre o texto do código:");
    }
 
-   displayName($0, package"."classe[0], texto, flag[1]);
+   displayName($0, prefixo, texto, flag[1]);
    codigo = getCodigo();
    printf " Código: %s\n\n", codigo  > "/dev/tty";
    
@@ -85,16 +104,6 @@ flag[0] == "gerarCodigo" {
 {
   if ("inplace::begin" in FUNCTAB) {    
     printf "%s%s", $0, RT;
-  }
-}
-
-ENDFILE {
-  if (cntClass > 1) {
-    printf "Aviso: Encontradas as seguintes classes e/ou enums aninhados: " > "/dev/tty";
-    for (i=1; i<length(classe); i++) {
-      printf "%s ", classe[i] > "/dev/tty";
-    }
-  printf "\n" > "/dev/tty";
   }
 }
 

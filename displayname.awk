@@ -45,31 +45,30 @@ BEGINFILE {
   next;
 }
 
-/^(public|private|protected).*\<class\>/ {
+/^(public|private|protected).* \<class\>/ {
   class = getClass($0);
   prefixo = package"."class;
-  print prefixo
   flag[0] = "gerarCodigo";
   flag[1] = "classe";
 }
 
-/\s+.*\<class\>/ {
+/\s+.* \<class\>/ {
   cc = cnt - 1;
   
   nestedClass = getClass($0);
-  prefixo = package"."class"."nestedClass;
+  prefixo = package"."class"$"nestedClass;
   flag[0] = "gerarCodigo";
   flag[1] = "classe";
 }
 
-/\s+.*\<class\>/, cnt==cc {
+/\s+.* \<class\>/, cnt==cc {
   if (cnt == cc) {
     nestedClass = "";
     prefixo = package"."class;
   }
 }
 
-/^\s+(public|private|protected).*\<enum\>/ {
+/^\s+(public|private|protected).* \<enum\>/ {
   enum = getEnum($0);
 }
 

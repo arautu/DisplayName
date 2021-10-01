@@ -14,6 +14,9 @@ BEGIN {
 
 BEGINFILE {
   parserFilePath(FILENAME, aMetaFile);
+  for (i in aMetaFile) {
+    print i, aMetaFile[i];
+  }
   MsgProp = locProperties(aMetaFile, msgs_paths);
   if (!MsgProp) {
     print "Erro: Não foi encontrado nenhum arquivo de dicionário." > "/dev/tty";
@@ -22,6 +25,7 @@ BEGINFILE {
   convertIso8859ToUtf8();
   cnt = 0;
   prefixo = "";
+  id = "";
   package = "";
   class = "";
 
@@ -52,7 +56,7 @@ BEGINFILE {
   flag[1] = "classe";
 }
 
-/\s+.* \<class\>/ {
+/^\s+.* \<class\>/ {
   cc = cnt - 1;
   
   nestedClass = getClass($0);
@@ -61,7 +65,7 @@ BEGINFILE {
   flag[1] = "classe";
 }
 
-/\s+.* \<class\>/, cnt==cc {
+/^\s+.* \<class\>/, cnt==cc {
   if (cnt == cc) {
     nestedClass = "";
     prefixo = package"."class;
@@ -79,6 +83,7 @@ $0 !~ /getDataAlteracaoAuditoria/ &&
 $0 !~ /getUsuarioAuditoria/ {
   flag[0] = "gerarCodigo";
   flag[1] = "metodo";
+  id = "." getPropriedadePeloMetodo($0);
 }
 
 flag[0] == "gerarCodigo" {
@@ -88,9 +93,7 @@ flag[0] == "gerarCodigo" {
    if(!texto) {
      texto = getTexto("Entre o texto do código:");
    }
-
-   displayName($0, prefixo, texto, flag[1]);
-   codigo = getCodigo();
+   codigo = prefixo id "=" texto;
    printf " Código: %s\n\n", codigo  > "/dev/tty";
    
    if ("inplace::begin" in FUNCTAB) {
@@ -98,6 +101,7 @@ flag[0] == "gerarCodigo" {
    }
    delete flag;
    texto = "";
+   id = "";
 }
 
 {

@@ -45,26 +45,6 @@ function getTexto(aviso,   Oldrs, id) {
   return texto;
 }
 
-# Faz a descoberta da propriedade relativa ao método analisado e constrói
-# o código de dicionário.
-# Argumentos:
-# * lineMetodo: Método 'getter' ou 'is', ex: 'public getValor()'.
-# * prefix: Prefixo do código de dicionário, ex:'modulo"."classe'
-# * texto: Texto que o código de dicionário representa.
-function displayName(lineMetodo, prefix, texto, instrucao) {
-  id = "";
-
-  switch (instrucao) {
-    case "metodo":
-      id = getPropriedadePeloMetodo(lineMetodo);
-      codigo = prefix"."id"="texto;
-      break;
-    case "classe":
-      codigo = prefix"="texto;
-      break;
-  }
-}
-
 # Recebe como parâmetro um método 'getter' ou 'is' e descobre a propriedade.
 # Argumentos:
 # * lineMetodo: Método 'getter' ou 'is', ex: 'public getValor()'.
@@ -81,13 +61,6 @@ function getPropriedadePeloMetodo(lineMetodo,   i, propriedade,  arr) {
     }
   }
   return propriedade;
-}
-
-# Retorna o código de dicionário, construído pela função displayname().
-# Retorno:
-# * Código de dicionário.
-function getCodigo() {
-  return codigo; 
 }
 
 # Salva o valor de 'sorted_in' na variável global 'save_sorted', antes

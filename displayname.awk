@@ -14,9 +14,6 @@ BEGIN {
 
 BEGINFILE {
   parserFilePath(FILENAME, aMetaFile);
-  for (i in aMetaFile) {
-    print i, aMetaFile[i];
-  }
   MsgProp = locProperties(aMetaFile, msgs_paths);
   if (!MsgProp) {
     print "Erro: Não foi encontrado nenhum arquivo de dicionário." > "/dev/tty";
